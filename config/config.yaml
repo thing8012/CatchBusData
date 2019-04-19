@@ -1,0 +1,6 @@
+app_id: "<Your app id>"
+app_key: "<Your app key>"
+mongodb:
+  host: "<Your mongodb host>"
+  port: "<Your mongodb port>"
+version: 1.0.0
