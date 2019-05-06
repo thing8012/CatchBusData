@@ -8,6 +8,7 @@ from requests import request
 import json
 import config.read_config
 import dbOperate.dbOperate
+import dateutil.parser as dp
 
 
 class Auth():
@@ -32,7 +33,7 @@ class Auth():
 
 
 if __name__ == "__main__":
-    url = "https://ptx.transportdata.tw/MOTC/v2/Bus/Route/City/Taichung?$top=30&$format=JSON"
+    url = "https://ptx.transportdata.tw/MOTC/v2/Bus/EstimatedTimeOfArrival/City/Taichung?$top=30&$format=JSON"
     # 取得自己的config
     sys_config = config.read_config.SystemConfig("config.yaml")
     sys_config = sys_config.get_config()
@@ -41,6 +42,12 @@ if __name__ == "__main__":
     json_data = json.loads(response.text)
 
     db_conn = dbOperate.dbOperate.dbOperate(mongo_str=sys_config["mongodb"]["host"])
+    # 把時間資料進行轉換成時間格式再存入db，不然無法進行搜尋
+    for index, data in enumerate(json_data):
+        json_data[index]["NextBusTime"] = dp.parse(data["NextBusTime"])
+        json_data[index]["SrcUpdateTime"] = dp.parse(data["SrcUpdateTime"])
+        json_data[index]["UpdateTime"] = dp.parse(data["UpdateTime"])
+
     db_conn.db_insert_many("Bus", "bus_route", json_data)
 
     print(json_data)
